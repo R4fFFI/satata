@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Satata - AI Job Platform for Disabilities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function onRegisterRoleChange(){
+            const sel = document.getElementById('registerRole');
+            const wrap = document.getElementById('registerCompanyWrap');
+            if(sel && wrap){
+                if(sel.value === 'company') wrap.classList.remove('hidden');
+                else wrap.classList.add('hidden');
+            }
+        }
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Blue 600
+                        primaryHover: '#1d4ed8', // Blue 700
+                        slate900: '#0f172a',
+                        slate50: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400; vertical-align: middle; }
+        
+        /* High Contrast Mode CSS */
+        .high-contrast { background-color: #000000 !important; color: #ffffff !important; }
+        .high-contrast * { border-color: #ffffff !important; }
+        .high-contrast .bg-white, .high-contrast .bg-slate50 { background-color: #111111 !important; color: #ffffff !important; }
+        .high-contrast .text-slate-500, .high-contrast .text-gray-500 { color: #dddddd !important; }
+        .high-contrast .text-primary { color: #60a5fa !important; }
+        .high-contrast .bg-primary { background-color: #3b82f6 !important; color: #000 !important; }
+        
+        /* Hide scrollbar for smooth UI */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+
+<body class="bg-slate50 text-slate900 pb-20 md:pb-0 transition-colors duration-300">
+
+    <div class="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-[100]">
+        <button onclick="toggleAccessibilityMenu()" class="w-14 h-14 bg-slate900 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-primary transition-all border-2 border-white focus:outline-none focus:ring-4 focus:ring-primary">
+            <span class="material-symbols-outlined text-3xl">accessibility_new</span>
+        </button>
+        <div id="acc-menu" class="hidden absolute bottom-16 right-0 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 flex flex-col gap-2">
+            <div class="flex justify-between items-center border-b pb-2 mb-2">
+                <h4 class="font-bold text-sm text-slate900">Aksesibilitas</h4>
+                <button onclick="toggleAccessibilityMenu()" class="text-gray-400 hover:text-red-500"><span class="material-symbols-outlined text-sm">close</span></button>
+            </div>
+            <button onclick="toggleHighContrast()" class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg text-left text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-primary">contrast</span> Kontras Tinggi
+            </button>
+            <button onclick="toggleDarkMode()" class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg text-left text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-primary">dark_mode</span> Dark Mode
+            </button>
+            <button onclick="changeFontSize(2)" class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg text-left text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-primary">format_size</span> Perbesar Teks
+            </button>
+            <button onclick="changeFontSize(-2)" class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg text-left text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-primary">text_decrease</span> Perkecil Teks
+            </button>
+        </div>
+    </div>
+
+    <header class="w-full top-0 sticky bg-white z-50 border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center h-20">
+            <a class="flex items-center gap-2" href="#">
+                <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white">handshake</span>
+                </div>
+                <span class="text-2xl font-extrabold tracking-tight text-slate900">SATATA</span>
+            </a>
+            <nav class="hidden md:flex gap-8 items-center text-sm font-semibold">
+                <a class="text-primary border-b-2 border-primary py-7" href="#">Cari Lowongan</a>
+                <a class="text-slate-500 hover:text-primary transition-colors py-7" href="#">Dashboard Perusahaan</a>
+                <a class="text-slate-500 hover:text-primary transition-colors py-7" href="javascript:void(0)" onclick="showSection('inbox'); if(typeof renderInbox==='function') renderInbox();">Inbox</a>
+                <a class="text-slate-500 hover:text-primary transition-colors py-7" href="#">Laporan ESG</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button onclick="showSection('inbox'); if(typeof renderInbox==='function') renderInbox();" class="relative hidden md:inline-flex items-center justify-center w-10 h-10 rounded-md hover:bg-gray-100" aria-label="Pesan">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span id="msgBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full px-1 hidden">0</span>
+                </button>
+                <button onclick="showSection('notifications')" class="relative hidden md:inline-flex items-center justify-center w-10 h-10 rounded-md hover:bg-gray-100" aria-label="Notifikasi">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full px-1 hidden">0</span>
+                </button>
+                <button onclick="showSection('login')" class="hidden md:block text-sm font-semibold text-slate-600 hover:text-primary transition-colors">Masuk</button>
+                <button onclick="showSection('register')" class="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primaryHover transition-colors shadow-md">Daftar Gratis</button>
+            </div>
+        </div>
+    </header>
+    <div id="sr-notify" class="sr-only" aria-live="polite"></div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 z-50 md:hidden pb-safe">
+        <button onclick="showSection('jobs')" class="nav-btn flex flex-col items-center gap-1 text-primary transition-colors">
+            <span class="material-symbols-outlined">work</span>
+            <span class="text-[10px] font-bold">Lowongan</span>
+        </button>
+        <button onclick="showSection('company')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">business</span>
+            <span class="text-[10px] font-medium">Perusahaan</span>
+        </button>
+        <button onclick="showSection('saved')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">bookmark</span>
+            <span class="text-[10px] font-medium">Tersimpan</span>
+        </button>
+        <button onclick="showSection('profile')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">person</span>
+            <span class="text-[10px] font-medium">Profil</span>
+        </button>
+    </nav>
+
+    <!-- JOBS SECTION (Default View) -->
+    <section id="jobs-section" class="bg-white border-b border-gray-200 py-12 md:py-16">
+        <div class="max-w-7xl mx-auto px-4 md:px-8">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-3xl md:text-5xl font-extrabold text-slate900 leading-tight mb-4">
+                    Temukan Karir Inklusif Berdasarkan <span class="text-primary">Kompetensi Anda.</span>
+                </h1>
+                <p class="text-lg text-slate-500 mb-8">
+                    Sistem pencocokan AI bebas bias yang mempertemukan talenta disabilitas dengan perusahaan terkemuka di Indonesia.
+                </p>
+
+                <div class="flex items-center bg-white border border-gray-300 rounded-xl shadow-sm p-1.5 max-w-2xl mx-auto focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
+                    <span class="material-symbols-outlined text-gray-400 pl-3">search</span>
+                    <input id="searchInput" type="text" onkeyup="filterJobs()" placeholder="Cari posisi, perusahaan, atau keahlian..." class="w-full py-3 px-4 outline-none text-slate900 bg-transparent" />
+                    <button onclick="openGlobalSearch()" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primaryHover transition-colors flex items-center gap-2">
+                        Cari
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROFILE SECTION (Hidden by default) -->
+    <section id="profile-section" class="hidden bg-white py-8">
+        <div class="max-w-4xl mx-auto px-4 md:px-8">
+            <!-- Profile Header -->
+            <div class="bg-gradient-to-r from-primary to-blue-400 rounded-xl p-6 mb-6 text-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 bg-white rounded-full overflow-hidden flex items-center justify-center">
+                        <img id="profilePhoto" src="" alt="Foto Profil" class="w-full h-full object-cover hidden" />
+                        <span id="profilePhotoPlaceholder" class="material-symbols-outlined text-primary text-4xl">account_circle</span>
+                    </div>
+                    <div>
+                        <h1 id="profileName" class="text-3xl font-bold">Nama Pengguna</h1>
+                        <p id="profileRole" class="text-blue-100">Front-end Developer</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Profile Info (Left Column) -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-xl border border-gray-200 p-6">
+                        <h3 class="font-bold text-slate900 mb-4">Informasi Pribadi</h3>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="text-slate-500 font-medium">Email</p>
+                                <p id="profileEmail" class="text-slate900 font-semibold">user@email.com</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Telepon</p>
+                                <p id="profilePhone" class="text-slate900 font-semibold">+62 812-1234-5678</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Lokasi</p>
+                                <p id="profileLocation" class="text-slate900 font-semibold">Jakarta, Indonesia</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Alamat</p>
+                                <p id="profileAddress" class="text-slate900 font-semibold">-</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Kota</p>
+                                <p id="profileCity" class="text-slate900 font-semibold">-</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Pendidikan</p>
+                                <p id="profileEducation" class="text-slate900 font-semibold">-</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">Tipe Disabilitas</p>
+                                <p id="profileDisability" class="text-slate900 font-semibold">Sensorik (Rungu)</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 font-medium">CV</p>
+                                <p id="profileCV" class="text-slate900 font-semibold">Belum diunggah</p>
+                            </div>
+                        </div>
+                        <button onclick="openEditProfileModal()" class="w-full mt-4 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryHover transition-colors">
+                            Edit Profil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Work Experience (Right Column) -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-xl border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate900 text-lg">Pengalaman Kerja</h3>
+                            <button onclick="openAddWorkModal()" class="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primaryHover transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg">add</span> Tambah
+                            </button>
+                        </div>
+
+                        <div id="workList" class="space-y-4">
+                            <!-- Work Experience Items Will Be Added Here -->
+                            <div class="text-center py-8 text-slate-500">
+                                <span class="material-symbols-outlined text-5xl block mb-2 text-gray-300">work_history</span>
+                                <p class="font-medium">Belum ada pengalaman kerja</p>
+                                <p class="text-sm">Tambahkan pengalaman kerja Anda untuk melengkapi profil</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-6 mt-6">
+                        <h3 class="font-bold text-slate900 text-lg mb-4">Keahlian</h3>
+                        <div id="skillsList" class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">HTML/CSS</span>
+                            <span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">JavaScript</span>
+                            <span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">React</span>
+                            <button onclick="openAddSkillModal()" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-lg">add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPANY SECTION (Hidden by default) -->
+    <section id="company-section" class="hidden bg-white py-12">
+        <div class="max-w-4xl mx-auto px-4 md:px-8">
+            <h2 class="text-3xl font-bold text-slate900 mb-8">Dashboard Perusahaan</h2>
+            <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <span class="material-symbols-outlined text-6xl text-gray-300 block mb-4">domain</span>
+                <p class="text-slate-500 font-medium">Fitur Dashboard Perusahaan akan segera hadir</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPANY DASHBOARD (Manage & Post Jobs) -->
+    <section id="company-dashboard" class="hidden bg-white py-12">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Dashboard Perusahaan</h2>
+                <div>
+                    <button onclick="showSection('company')" class="px-3 py-2 bg-slate-100 rounded">Kembali</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 bg-white border rounded p-4">
+                    <h3 class="font-bold mb-4">Posting Lowongan</h3>
+                    <div class="space-y-3 text-sm">
+                        <input id="postTitle" type="text" placeholder="Judul Pekerjaan" class="w-full px-3 py-2 border rounded" />
+                        <input id="postCompany" type="text" placeholder="Nama Perusahaan" class="w-full px-3 py-2 border rounded" />
+                        <input id="postLocation" type="text" placeholder="Lokasi" class="w-full px-3 py-2 border rounded" />
+                        <input id="postSalary" type="text" placeholder="Gaji" class="w-full px-3 py-2 border rounded" />
+                        <textarea id="postDesc" placeholder="Deskripsi" class="w-full px-3 py-2 border rounded h-24"></textarea>
+                        <button onclick="createCompanyJob()" class="w-full px-3 py-2 bg-primary text-white rounded">Posting</button>
+                    </div>
+                </div>
+                <div class="md:col-span-2 bg-white border rounded p-4">
+                    <h3 class="font-bold mb-4">Kelola Lowongan</h3>
+                    <div id="companyJobsList" class="space-y-3 text-sm"></div>
+                    <div id="companyApplicantsSection" class="hidden mt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold">Daftar Pelamar</h4>
+                            <div class="flex items-center gap-2">
+                                <input id="applicantSearch" type="search" placeholder="Cari pelamar..." oninput="filterApplicants()" class="px-3 py-2 border rounded" />
+                                <select id="applicantStatusFilter" onchange="filterApplicants()" class="px-2 py-2 border rounded">
+                                    <option value="all">Semua Status</option>
+                                    <option value="Submitted">Submitted</option>
+                                    <option value="Interview Scheduled">Interview Scheduled</option>
+                                    <option value="Accepted">Accepted</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                                <button onclick="document.getElementById('companyApplicantsSection').classList.add('hidden'); document.getElementById('companyJobsList').classList.remove('hidden');" class="text-sm px-3 py-1 bg-slate-100 rounded">Kembali</button>
+                            </div>
+                        </div>
+                        <div id="companyApplicantsList" class="space-y-3 text-sm bg-white p-2 rounded border"></div>
+                        <div id="companyApplicantsPagination" class="flex items-center justify-center gap-4 mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ADMIN PANEL -->
+    <section id="admin-section" class="hidden bg-white py-12">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Admin Panel</h2>
+            </div>
+            <div class="grid md:grid-cols-4 gap-4">
+                <nav class="col-span-1 bg-white border rounded p-4">
+                    <ul class="space-y-2 text-sm">
+                        <li><button onclick="renderAdminUsers()" class="w-full text-left">Kelola User</button></li>
+                        <li><button onclick="renderAdminCompanies()" class="w-full text-left">Kelola Perusahaan</button></li>
+                        <li><button onclick="renderAdminJobs()" class="w-full text-left">Kelola Lowongan</button></li>
+                        <li><button onclick="renderAdminStats()" class="w-full text-left">Statistik Platform</button></li>
+                    </ul>
+                </nav>
+                <div class="md:col-span-3 bg-white border rounded p-4">
+                    <div id="adminContent">Pilih menu di sebelah kiri.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SAVED JOBS SECTION (Hidden by default) -->
+    <section id="saved-section" class="hidden bg-white py-12">
+        <div class="max-w-4xl mx-auto px-4 md:px-8">
+            <h2 class="text-3xl font-bold text-slate900 mb-8">Lowongan Tersimpan</h2>
+            <div id="savedJobsList" class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <span class="material-symbols-outlined text-6xl text-gray-300 block mb-4">bookmark</span>
+                <p class="text-slate-500 font-medium">Belum ada lowongan yang tersimpan</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- LOGIN SECTION -->
+    <section id="login-section" class="hidden bg-white py-12">
+        <div class="max-w-md mx-auto px-4 md:px-8">
+            <h2 class="text-2xl font-bold mb-4">Masuk</h2>
+            <form id="loginForm" class="bg-white rounded-xl border border-gray-200 p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input id="loginEmail" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input id="loginPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="loginUser()" class="px-4 py-2 bg-primary text-white rounded-lg">Masuk</button>
+                    <button type="button" onclick="showSection('register')" class="px-4 py-2 bg-slate-100 rounded-lg">Daftar</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- REGISTER SECTION -->
+    <section id="register-section" class="hidden bg-white py-12">
+        <div class="max-w-md mx-auto px-4 md:px-8">
+            <h2 class="text-2xl font-bold mb-4">Daftar</h2>
+            <form id="registerForm" class="bg-white rounded-xl border border-gray-200 p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+                    <input id="registerName" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Daftar Sebagai</label>
+                    <select id="registerRole" onchange="onRegisterRoleChange()" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="user">Pencari Kerja</option>
+                        <option value="company">Perusahaan</option>
+                    </select>
+                </div>
+                <div class="mb-4 hidden" id="registerCompanyWrap">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Perusahaan (jika mendaftar sebagai Perusahaan)</label>
+                    <input id="registerCompanyName" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input id="registerEmail" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input id="registerPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="registerUser()" class="px-4 py-2 bg-primary text-white rounded-lg">Daftar</button>
+                    <button type="button" onclick="showSection('login')" class="px-4 py-2 bg-slate-100 rounded-lg">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboard-section" class="hidden bg-white py-12">
+        <div class="max-w-5xl mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Dashboard</h2>
+                <div class="flex gap-2">
+                    <button onclick="logoutUser()" class="px-3 py-2 bg-slate-100 rounded">Logout</button>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-4 gap-4">
+                <nav class="col-span-1 bg-white border rounded p-4">
+                    <ul class="space-y-2 text-sm">
+                        <li><button onclick="showSection('profile')" class="w-full text-left">Profil Saya</button></li>
+                        <li><button onclick="openEditProfileModal()" class="w-full text-left">Edit Profil</button></li>
+                        <li><button onclick="document.getElementById('editCV').click();" class="w-full text-left">Upload CV</button></li>
+                        <li><button onclick="showSection('saved')" class="w-full text-left">Lowongan Tersimpan</button></li>
+                        <li><button onclick="showSection('inbox'); if(typeof renderInbox==='function') renderInbox();" class="w-full text-left">Inbox <span id="sidebarMsgBadge" class="ml-2 text-xs text-red-500 hidden">0</span></button></li>
+                        <li><button onclick="alert('Lamaran Saya - fitur lanjutan')" class="w-full text-left">Lamaran Saya</button></li>
+                        <li><button onclick="alert('Notifikasi - fitur lanjutan')" class="w-full text-left">Notifikasi</button></li>
+                        <li><button onclick="alert('Pengaturan Akun - fitur lanjutan')" class="w-full text-left">Pengaturan Akun</button></li>
+                    </ul>
+                </nav>
+                <div class="md:col-span-3 bg-white border rounded p-4">
+                    <p class="text-sm text-slate-600">Ringkasan dashboard akan ditampilkan di sini. Gunakan navigasi di kiri untuk mengelola profil, CV, dan lowongan tersimpan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- APPLICATIONS (Lamaran Saya) -->
+    <section id="applications-section" class="hidden bg-white py-12">
+        <div class="max-w-5xl mx-auto px-4 md:px-8">
+            <h2 class="text-2xl font-bold mb-4">Lamaran Saya</h2>
+            <div id="applicationsList" class="bg-white rounded-xl border border-gray-200 p-6">
+                <p class="text-sm text-slate-500">Belum ada lamaran.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NOTIFICATIONS SECTION -->
+    <section id="notifications-section" class="hidden bg-white py-12">
+        <div class="max-w-4xl mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Notifikasi</h2>
+                <div>
+                    <button onclick="markAllNotificationsRead()" class="px-3 py-2 bg-slate-100 rounded">Tandai Semua Terbaca</button>
+                </div>
+            </div>
+            <div id="notificationsList" class="bg-white rounded-xl border border-gray-200 p-6">
+                <p class="text-sm text-slate-500">Belum ada notifikasi.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- INBOX SECTION -->
+    <section id="inbox-section" class="hidden bg-white py-12">
+        <div class="max-w-6xl mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Inbox</h2>
+                <div>
+                    <button onclick="showSection('dashboard')" class="px-3 py-2 bg-slate-100 rounded">Kembali</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6">
+                <aside class="md:col-span-1 bg-white border rounded p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold">Percakapan</h3>
+                        <button onclick="openCompose()" class="text-sm px-2 py-1 bg-primary text-white rounded">Compose</button>
+                    </div>
+                    <div class="mb-3">
+                        <input id="threadSearch" oninput="filterThreads(this.value)" type="search" placeholder="Cari percakapan..." class="w-full px-3 py-2 border rounded text-sm" />
+                    </div>
+                    <div id="threadsList" class="space-y-2 text-sm overflow-y-auto max-h-[60vh]"></div>
+                </aside>
+                <div class="md:col-span-3 bg-white border rounded p-4">
+                    <div id="threadView" class="flex flex-col gap-4">
+                        <p class="text-sm text-slate-500">Pilih percakapan di kiri untuk melihat pesan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <aside class="hidden lg:block w-72 flex-shrink-0">
+            <div class="bg-white rounded-xl border border-gray-200 p-6 sticky top-28">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-slate900">Filter Pencarian</h3>
+                    <button class="text-sm text-primary font-medium hover:underline">Reset</button>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Kategori Disabilitas</h4>
+                    <div class="space-y-2" id="categoryFilters">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="cat" value="Semua" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300" checked/>
+                            <span class="text-sm text-slate-600 group-hover:text-primary">Semua Kategori</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Daksa" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Daksa</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Netra" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Netra</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Rungu" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Rungu</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Wicara" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Wicara</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Intelektual Ringan" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Intelektual Ringan</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Mental Psikososial" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Mental Psikososial</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Autisme" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Autisme</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Down Syndrome" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Down Syndrome</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Cerebral Palsy" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Cerebral Palsy</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="radio" name="cat" value="Multiple Disabilities" onchange="filterByCategory(this.value)" class="w-4 h-4 text-primary focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Multiple Disabilities</span></label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Akomodasi Tersedia</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="wheelchair" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Akses Kursi Roda / Ramp</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="screen_reader" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Screen Reader Support</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="remote" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Kerja Jarak Jauh (Remote)</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="adjustable_workstation" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Meja Kerja yang Dapat Disesuaikan</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="sign_language" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Juru Bahasa Isyarat</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="assistive_tech" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Teknologi Bantu (Assistive Tech)</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="flexible_hours" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Jam Kerja Fleksibel</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="accom" value="accessible_parking" onchange="applyFilters()" class="w-4 h-4 text-primary rounded focus:ring-primary border-gray-300"/><span class="text-sm text-slate-600 group-hover:text-primary">Parkir Aksesibel</span></label>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="flex-grow">
+            <div class="flex lg:hidden overflow-x-auto gap-2 pb-4 mb-4 scrollbar-hide border-b border-gray-200">
+                <button onclick="filterByCategory('Semua')" class="px-4 py-2 bg-slate900 text-white text-sm font-medium rounded-full whitespace-nowrap">Semua</button>
+                <button onclick="filterByCategory('Fisik')" class="px-4 py-2 bg-white border border-gray-300 text-slate-600 text-sm font-medium rounded-full whitespace-nowrap hover:bg-gray-50">Fisik</button>
+                <button onclick="filterByCategory('Sensorik')" class="px-4 py-2 bg-white border border-gray-300 text-slate-600 text-sm font-medium rounded-full whitespace-nowrap hover:bg-gray-50">Sensorik</button>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-slate900">Rekomendasi Pekerjaan</h2>
+                <span class="text-sm text-slate-500 font-medium">Berdasarkan AI Match</span>
+            </div>
+
+            <div id="jobList" class="flex flex-col gap-4">
+                
+                <article class="job-card bg-white rounded-xl border border-gray-200 p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer group" data-title="software engineer frontend" data-category="Sensorik">
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center text-primary border border-blue-100 flex-shrink-0">
+                                <span class="material-symbols-outlined text-3xl">code</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate900 group-hover:text-primary transition-colors mb-1">Frontend Software Engineer</h3>
+                                <p class="text-sm font-medium text-slate-600 mb-2">PT GoTo Gojek Tokopedia Tbk</p>
+                                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> Jakarta Selatan (Hybrid)</span>
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Rp 10 - 15 Juta / Bulan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-gray-300 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">bookmark_border</span></button>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex gap-2">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Sensorik (Tuli)</span>
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Screen Reader Ready</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded">
+                            <span class="material-symbols-outlined text-[14px]">auto_awesome</span> AI Match 98%
+                        </div>
+                    </div>
+                </article>
+
+                <article class="job-card bg-white rounded-xl border border-gray-200 p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer group" data-title="administrasi data entry" data-category="Fisik">
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center text-primary border border-blue-100 flex-shrink-0">
+                                <span class="material-symbols-outlined text-3xl">description</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate900 group-hover:text-primary transition-colors mb-1">Staff Administrasi (Data Entry)</h3>
+                                <p class="text-sm font-medium text-slate-600 mb-2">PT Bank Mandiri (Persero) Tbk</p>
+                                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> Bandung (On-site)</span>
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Rp 5 - 7 Juta / Bulan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-gray-300 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">bookmark_border</span></button>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex gap-2">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Fisik (Daksa)</span>
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Akses Kursi Roda</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded">
+                            <span class="material-symbols-outlined text-[14px]">auto_awesome</span> AI Match 89%
+                        </div>
+                    </div>
+                </article>
+
+                 <article class="job-card bg-white rounded-xl border border-gray-200 p-5 hover:border-primary hover:shadow-md transition-all cursor-pointer group" data-title="digital marketing specialist" data-category="Sensorik">
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center text-primary border border-blue-100 flex-shrink-0">
+                                <span class="material-symbols-outlined text-3xl">campaign</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate900 group-hover:text-primary transition-colors mb-1">Digital Marketing Specialist</h3>
+                                <p class="text-sm font-medium text-slate-600 mb-2">Unilever Indonesia</p>
+                                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> WFH / Remote</span>
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Dirahasiakan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-gray-300 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">bookmark_border</span></button>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex gap-2">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Sensorik / Fisik</span>
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-semibold rounded uppercase tracking-wide">Kerja Fleksibel</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-emerald-600 font-bold text-xs bg-emerald-50 px-2.5 py-1 rounded">
+                            <span class="material-symbols-outlined text-[14px]">auto_awesome</span> AI Match 85%
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: Add Work Experience -->
+    <div id="addWorkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate900">Tambah Pengalaman Kerja</h2>
+                <button onclick="closeAddWorkModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <form id="addWorkForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Posisi</label>
+                    <input type="text" placeholder="Contoh: Senior Developer" class="work-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Perusahaan</label>
+                    <input type="text" placeholder="Contoh: PT Telkom" class="work-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Mulai Bekerja</label>
+                        <input type="month" class="work-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Selesai Bekerja</label>
+                        <input type="month" class="work-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Pekerjaan</label>
+                    <textarea placeholder="Jelaskan tanggung jawab dan pencapaian Anda..." class="work-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-24 resize-none"></textarea>
+                </div>
+                <button type="button" onclick="addWorkExperience()" class="w-full px-4 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primaryHover transition-colors">
+                    Simpan Pengalaman
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Edit Profile -->
+    <div id="editProfileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate900">Edit Profil</h2>
+                <button onclick="closeEditProfileModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <form id="editProfileForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="editName" placeholder="Nama Anda" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Profesi / Posisi</label>
+                    <input type="text" id="editRole" placeholder="Posisi Anda" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+                    <input type="email" id="editEmail" placeholder="email@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Telepon</label>
+                    <input type="tel" id="editPhone" placeholder="+62 812-1234-5678" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Lokasi</label>
+                    <input type="text" id="editLocation" placeholder="Kota, Negara" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Alamat</label>
+                    <input type="text" id="editAddress" placeholder="Alamat lengkap" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Kota</label>
+                    <input type="text" id="editCity" placeholder="Kota" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Pendidikan</label>
+                    <input type="text" id="editEducation" placeholder="Contoh: S1 Teknik Informatika" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Tipe Disabilitas</label>
+                    <select id="editDisability" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option>Fisik (Daksa)</option>
+                        <option selected>Sensorik (Rungu)</option>
+                        <option>Sensorik (Netra)</option>
+                        <option>Intelektual Ringan</option>
+                        <option>Mental Psikososial</option>
+                        <option>Autisme</option>
+                        <option>Down Syndrome</option>
+                        <option>Cerebral Palsy</option>
+                        <option>Multiple Disabilities</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Foto Profil (opsional)</label>
+                    <input type="file" id="editPhoto" accept="image/*" class="w-full" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Upload CV (PDF)</label>
+                    <input type="file" id="editCV" accept="application/pdf" class="w-full" />
+                </div>
+                <button type="button" onclick="saveProfileChanges()" class="w-full px-4 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primaryHover transition-colors">
+                    Simpan Perubahan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Skill -->
+    <div id="addSkillModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-xs w-full">
+            <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate900">Tambah Keahlian</h2>
+                <button onclick="closeAddSkillModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="addSkillForm" class="p-6 space-y-4">
+                <input type="text" id="skillInput" placeholder="Contoh: Python, Project Management" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required/>
+                <button type="button" onclick="addSkill()" class="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primaryHover transition-colors">
+                    Tambah Keahlian
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Applicant Detail -->
+    <div id="applicantDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[300] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate900">Detail Pelamar</h2>
+                <button onclick="closeApplicantModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <h3 id="ap-name" class="font-bold text-lg">Nama Pelamar</h3>
+                    <p id="ap-email" class="text-sm text-slate-600">email@example.com</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><p class="text-slate-500">Telepon</p><p id="ap-phone" class="font-semibold">-</p></div>
+                    <div><p class="text-slate-500">Kota</p><p id="ap-city" class="font-semibold">-</p></div>
+                    <div><p class="text-slate-500">Tipe Disabilitas</p><p id="ap-disability" class="font-semibold">-</p></div>
+                    <div><p class="text-slate-500">CV</p><p><a id="ap-cv" class="text-primary underline hidden" href="#" target="_blank">Lihat CV</a></p></div>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-600 mb-2">Kirim Pesan ke Pelamar</label>
+                    <textarea id="ap-message" class="w-full border px-3 py-2 rounded" rows="4" placeholder="Tulis pesan..."></textarea>
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button onclick="closeApplicantModal()" class="px-4 py-2 bg-slate-100 rounded">Batal</button>
+                        <button id="ap-send" onclick="" class="px-4 py-2 bg-primary text-white rounded">Kirim</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Compose Message -->
+    <div id="composeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[300] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full">
+            <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate900">Tulis Pesan Baru</h2>
+                <button onclick="closeComposeModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Kepada (pilih pengguna)</label>
+                    <select id="composeTo" class="w-full border px-3 py-2 rounded"></select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Pesan</label>
+                    <textarea id="composeBody" class="w-full border px-3 py-2 rounded" rows="4" placeholder="Tulis pesan..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeComposeModal()" class="px-4 py-2 bg-slate-100 rounded">Batal</button>
+                    <button onclick="sendNewConversation()" class="px-4 py-2 bg-primary text-white rounded">Kirim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL SEARCH OVERLAY -->
+    <div id="globalSearchOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[400] flex items-start justify-center pt-20 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-4">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex gap-2 items-center w-full">
+                    <input id="globalSearchInput" type="search" placeholder="Cari lowongan, perusahaan, atau pesan..." class="w-full px-4 py-2 border rounded" />
+                    <button onclick="closeGlobalSearch()" class="px-3 py-2 bg-slate-100 rounded">Tutup</button>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-bold mb-2">Lowongan</h4>
+                    <div class="mb-3 grid grid-cols-2 gap-2">
+                        <select id="globalFilterLocation" onchange="renderGlobalSearchResults(document.getElementById('globalSearchInput').value)" class="px-3 py-2 border rounded text-sm">
+                            <option value="">Semua Lokasi</option>
+                        </select>
+                        <select id="globalFilterSalary" onchange="renderGlobalSearchResults(document.getElementById('globalSearchInput').value)" class="px-3 py-2 border rounded text-sm">
+                            <option value="">Semua Gaji</option>
+                            <option value="Rp 3 - 5 Juta / Bulan">Rp 3 - 5 Juta / Bulan</option>
+                            <option value="Rp 5 - 8 Juta / Bulan">Rp 5 - 8 Juta / Bulan</option>
+                            <option value="Rp 8 - 12 Juta / Bulan">Rp 8 - 12 Juta / Bulan</option>
+                            <option value="Rp 12 - 20 Juta / Bulan">Rp 12 - 20 Juta / Bulan</option>
+                            <option value="Dirahasiakan">Dirahasiakan</option>
+                        </select>
+                        <select id="globalPerPage" onchange="renderGlobalSearchResults(document.getElementById('globalSearchInput').value)" class="px-3 py-2 border rounded text-sm">
+                            <option value="5">5 / halaman</option>
+                            <option value="10" selected>10 / halaman</option>
+                            <option value="20">20 / halaman</option>
+                        </select>
+                        <div class="text-sm text-slate-600 flex items-center gap-2">
+                            <input id="globalFilterRemote" type="checkbox" onchange="renderGlobalSearchResults(document.getElementById('globalSearchInput').value)" /> <label for="globalFilterRemote">Hanya Remote</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-sm font-medium mb-1">Akomodasi</div>
+                        <div id="globalFilterAccom" class="flex flex-wrap gap-2 text-sm"></div>
+                    </div>
+                    <div id="globalJobsResults" class="space-y-2 max-h-[50vh] overflow-y-auto"></div>
+                    <div id="globalJobsPagination" class="flex items-center justify-between mt-3"></div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-2">Pesan</h4>
+                    <div id="globalMessagesResults" class="space-y-2 max-h-[60vh] overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PROFILE DATA STORAGE ---
+        let profileData = {
+            name: 'Nama Pengguna',
+            role: 'Front-end Developer',
+            email: 'user@email.com',
+            phone: '+62 812-1234-5678',
+            location: 'Jakarta, Indonesia',
+            disability: 'Sensorik (Rungu)',
+            workExperience: [],
+            skills: ['HTML/CSS', 'JavaScript', 'React']
+        };
+
+        // --- NAVIGATION FUNCTIONS ---
+        function showSection(section) {
+            // Map section name to route hash
+            const map = {
+                'jobs': '#/jobs',
+                'inbox': '#/inbox',
+                'profile': '#/profile',
+                'company': '#/company',
+                'company-dashboard': '#/company-dashboard',
+                'saved': '#/saved',
+                'dashboard': '#/dashboard',
+                'login': '#/login',
+                'register': '#/register',
+                'applications': '#/applications',
+                'notifications': '#/notifications',
+                'admin': '#/admin'
+            };
+
+            // Hide all main sections
+            const sections = ['jobs-section','profile-section','company-section','saved-section','dashboard-section','login-section','register-section','applications-section','notifications-section','admin-section','company-dashboard'];
+            sections.forEach(id=>{ const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+
+            // Show selected section by name
+            if(section === 'jobs') {
+                document.getElementById('jobs-section').classList.remove('hidden');
+            } else if(section === 'profile') {
+                document.getElementById('profile-section').classList.remove('hidden');
+                if(typeof loadProfileData === 'function') loadProfileData();
+            } else if(section === 'company') {
+                document.getElementById('company-section').classList.remove('hidden');
+            } else if(section === 'saved') {
+                document.getElementById('saved-section').classList.remove('hidden');
+                if(typeof renderSavedJobs === 'function') renderSavedJobs();
+            } else if(section === 'dashboard') {
+                document.getElementById('dashboard-section').classList.remove('hidden');
+            } else if(section === 'login'){
+                document.getElementById('login-section').classList.remove('hidden');
+            } else if(section === 'register'){
+                document.getElementById('register-section').classList.remove('hidden');
+            } else if(section === 'applications'){
+                document.getElementById('applications-section').classList.remove('hidden');
+                if(typeof renderApplications === 'function') renderApplications();
+            } else if(section === 'notifications'){
+                document.getElementById('notifications-section').classList.remove('hidden');
+                if(typeof renderNotificationsList === 'function') renderNotificationsList();
+                if(typeof markAllNotificationsRead === 'function') markAllNotificationsRead();
+            } else if(section === 'inbox'){
+                document.getElementById('inbox-section').classList.remove('hidden');
+                if(typeof renderInbox === 'function') renderInbox();
+            } else if(section === 'company-dashboard'){
+                document.getElementById('company-dashboard').classList.remove('hidden');
+                if(typeof renderCompanyJobs === 'function') renderCompanyJobs();
+            } else if(section === 'admin'){
+                document.getElementById('admin-section').classList.remove('hidden');
+            }
+
+            // Update URL hash if mapping exists
+            const desiredHash = map[section];
+            if(desiredHash && location.hash !== desiredHash){
+                // use history API to avoid double router calls where possible
+                try{ history.pushState(null, '', desiredHash); } catch(e){ location.hash = desiredHash; }
+            }
+
+            // Update button styling
+            updateNavButtonStyles(section);
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function updateNavButtonStyles(activeSection) {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Update active button
+            if(activeSection === 'jobs') navButtons[0].classList.add('text-primary');
+            else if(activeSection === 'company') navButtons[1].classList.add('text-primary');
+            else if(activeSection === 'saved') navButtons[2].classList.add('text-primary');
+            else if(activeSection === 'profile') navButtons[3].classList.add('text-primary');
+        }
+
+        // --- PROFILE MANAGEMENT ---
+        function getProfiles(){
+            return JSON.parse(localStorage.getItem('satata_profiles')||'{}');
+        }
+        function setProfiles(obj){
+            localStorage.setItem('satata_profiles', JSON.stringify(obj));
+        }
+        function getCurrentUserId(){
+            return localStorage.getItem('satata_current_user');
+        }
+
+        function loadProfileData() {
+            // If there's a logged-in user, try to load their profile
+            const uid = getCurrentUserId();
+            const profiles = getProfiles();
+            if(uid && profiles[uid]){
+                profileData = profiles[uid];
+            }
+
+            document.getElementById('profileName').textContent = profileData.name || 'Nama Pengguna';
+            document.getElementById('profileRole').textContent = profileData.role || '';
+            document.getElementById('profileEmail').textContent = profileData.email || '';
+            document.getElementById('profilePhone').textContent = profileData.phone || '';
+            document.getElementById('profileLocation').textContent = profileData.location || '';
+            document.getElementById('profileDisability').textContent = profileData.disability || '';
+            document.getElementById('profileAddress').textContent = profileData.address || '-';
+            document.getElementById('profileCity').textContent = profileData.city || '-';
+            document.getElementById('profileEducation').textContent = profileData.education || '-';
+            if(profileData.photo){
+                const img = document.getElementById('profilePhoto');
+                img.src = profileData.photo;
+                img.classList.remove('hidden');
+                document.getElementById('profilePhotoPlaceholder').classList.add('hidden');
+            }
+            if(profileData.cv){
+                document.getElementById('profileCV').innerHTML = `<a href="${profileData.cv}" target="_blank" class="text-primary underline">Lihat CV</a>`;
+            } else {
+                document.getElementById('profileCV').textContent = 'Belum diunggah';
+            }
+
+            renderWorkExperience();
+            renderSkills();
+        }
+
+        function renderWorkExperience() {
+            const workList = document.getElementById('workList');
+            if(profileData.workExperience.length === 0) {
+                workList.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="material-symbols-outlined text-5xl block mb-2 text-gray-300">work_history</span>
+                        <p class="font-medium">Belum ada pengalaman kerja</p>
+                        <p class="text-sm">Tambahkan pengalaman kerja Anda untuk melengkapi profil</p>
+                    </div>
+                `;
+            } else {
+                workList.innerHTML = profileData.workExperience.map((work, idx) => `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-bold text-slate900">${work.position}</h4>
+                                <p class="text-sm text-slate-600">${work.company}</p>
+                            </div>
+                            <button onclick="deleteWorkExperience(${idx})" class="text-gray-400 hover:text-red-500 transition-colors">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">${work.startDate} hingga ${work.endDate || 'Saat ini'}</p>
+                        <p class="text-sm text-slate-600">${work.description}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openAddWorkModal() {
+            document.getElementById('addWorkModal').classList.remove('hidden');
+        }
+
+        function closeAddWorkModal() {
+            document.getElementById('addWorkModal').classList.add('hidden');
+            document.getElementById('addWorkForm').reset();
+        }
+
+        function addWorkExperience() {
+            const inputs = document.querySelectorAll('#addWorkForm .work-input');
+            const position = inputs[0].value;
+            const company = inputs[1].value;
+            const startDate = inputs[2].value;
+            const endDate = inputs[3].value;
+            const description = inputs[4].value;
+
+            if(!position || !company || !startDate) {
+                alert('Harap isi semua field yang diperlukan!');
+                return;
+            }
+
+            profileData.workExperience.push({
+                position,
+                company,
+                startDate,
+                endDate,
+                description
+            });
+
+            renderWorkExperience();
+            closeAddWorkModal();
+            alert('Pengalaman kerja berhasil ditambahkan!');
+        }
+
+        function deleteWorkExperience(idx) {
+            if(confirm('Yakin ingin menghapus pengalaman kerja ini?')) {
+                profileData.workExperience.splice(idx, 1);
+                renderWorkExperience();
+            }
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('editName').value = profileData.name || '';
+            document.getElementById('editRole').value = profileData.role || '';
+            document.getElementById('editEmail').value = profileData.email || '';
+            document.getElementById('editPhone').value = profileData.phone || '';
+            document.getElementById('editLocation').value = profileData.location || '';
+            document.getElementById('editAddress').value = profileData.address || '';
+            document.getElementById('editCity').value = profileData.city || '';
+            document.getElementById('editEducation').value = profileData.education || '';
+            document.getElementById('editDisability').value = profileData.disability || '';
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        }
+
+        function readFileAsDataURL(file){
+            return new Promise((res, rej)=>{
+                if(!file) return res(null);
+                const reader = new FileReader();
+                reader.onload = ()=>res(reader.result);
+                reader.onerror = rej;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveProfileChanges() {
+            profileData.name = document.getElementById('editName').value;
+            profileData.role = document.getElementById('editRole').value;
+            profileData.email = document.getElementById('editEmail').value;
+            profileData.phone = document.getElementById('editPhone').value;
+            profileData.location = document.getElementById('editLocation').value;
+            profileData.address = document.getElementById('editAddress').value;
+            profileData.city = document.getElementById('editCity').value;
+            profileData.education = document.getElementById('editEducation').value;
+            profileData.disability = document.getElementById('editDisability').value;
+
+            // handle files
+            const photoFile = document.getElementById('editPhoto').files[0];
+            const cvFile = document.getElementById('editCV').files[0];
+            if(photoFile){
+                try{ profileData.photo = await readFileAsDataURL(photoFile); } catch(e){}
+            }
+            if(cvFile){
+                try{ profileData.cv = await readFileAsDataURL(cvFile); } catch(e){}
+            }
+
+            // persist to profiles map if user logged-in
+            const uid = getCurrentUserId();
+            if(uid){
+                const profiles = getProfiles();
+                profiles[uid] = profileData;
+                setProfiles(profiles);
+            } else {
+                // store as guest
+                const profiles = getProfiles();
+                profiles['guest'] = profileData;
+                setProfiles(profiles);
+            }
+
+            loadProfileData();
+            if(typeof renderJobList === 'function') renderJobList();
+            closeEditProfileModal();
+            alert('Profil berhasil diperbarui!');
+        }
+
+        function openAddSkillModal() {
+            document.getElementById('addSkillModal').classList.remove('hidden');
+        }
+
+        function closeAddSkillModal() {
+            document.getElementById('addSkillModal').classList.add('hidden');
+            document.getElementById('skillInput').value = '';
+        }
+
+        function addSkill() {
+            const skill = document.getElementById('skillInput').value.trim();
+            if(!skill) {
+                alert('Harap masukkan keahlian!');
+                return;
+            }
+
+            if(profileData.skills.includes(skill)) {
+                alert('Keahlian ini sudah ada!');
+                return;
+            }
+
+            profileData.skills.push(skill);
+            renderSkills();
+            closeAddSkillModal();
+        }
+
+        function renderSkills() {
+            const skillsList = document.getElementById('skillsList');
+            skillsList.innerHTML = profileData.skills.map(skill => `
+                <span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">${skill}</span>
+            `).join('');
+            
+            // Add button back
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.onclick = () => openAddSkillModal();
+            addBtn.className = 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-colors flex items-center gap-1';
+            addBtn.innerHTML = '<span class="material-symbols-outlined text-lg">add</span>';
+            skillsList.appendChild(addBtn);
+        }
+
+        // --- ACCESSIBILITY FUNCTIONS (WCAG 2.1) ---
+        function toggleAccessibilityMenu() {
+            const menu = document.getElementById('acc-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            toggleAccessibilityMenu();
+        }
+
+        let baseFontSize = 16;
+        function changeFontSize(amount) {
+            baseFontSize += amount;
+            if(baseFontSize > 22) baseFontSize = 22;
+            if(baseFontSize < 14) baseFontSize = 14;
+            document.documentElement.style.fontSize = baseFontSize + 'px';
+        }
+
+        // --- JOB SEARCH & FILTERING ---
+        let currentCategory = 'Semua';
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            applyFilters();
+            const mobileBtns = document.querySelectorAll('.overflow-x-auto button');
+            mobileBtns.forEach(btn => {
+                if(btn.innerText === category) {
+                    btn.classList.add('bg-slate900', 'text-white');
+                    btn.classList.remove('bg-white', 'text-slate-600', 'border-gray-300');
+                } else {
+                    btn.classList.remove('bg-slate900', 'text-white');
+                    btn.classList.add('bg-white', 'text-slate-600', 'border-gray-300');
+                }
+            });
+        }
+
+        function filterJobs() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.job-card');
+            // read selected accommodations
+            const selectedAccom = Array.from(document.querySelectorAll('input[name="accom"]:checked')).map(i=>i.value.toLowerCase());
+
+            cards.forEach(card => {
+                const title = (card.dataset.title||'').toLowerCase();
+                const category = (card.dataset.category||'').toLowerCase();
+                const accepts = (card.dataset.accept||'').toLowerCase();
+                const accom = (card.dataset.accommodations||'').toLowerCase();
+                const matchSearch = title.includes(query);
+                const cat = currentCategory.toLowerCase();
+
+                let matchCategory = false;
+                if(currentCategory === 'Semua' || currentCategory === 'Semua Kategori') matchCategory = true;
+                else if(category === cat) matchCategory = true; // job category match
+                else if(accepts.includes(cat)) matchCategory = true; // disability accepted
+
+                // accommodations: if any selected, job must include all selected (AND)
+                let matchAccom = true;
+                if(selectedAccom.length){
+                    matchAccom = selectedAccom.every(s => accom.includes(s));
+                }
+
+                if (matchSearch && matchCategory && matchAccom) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Job card click handler
+        document.querySelectorAll('.job-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const jobTitle = this.querySelector('h3').textContent;
+                const company = this.querySelector('p').textContent;
+                alert(`Membuka detail lowongan:\n\n${jobTitle}\n${company}\n\nFitur detail akan ditambahkan segera.`);
+            });
+        });
+
+        // Bookmark button functionality
+        document.querySelectorAll('.job-card button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const icon = this.querySelector('.material-symbols-outlined');
+                if(icon.textContent === 'bookmark_border') {
+                    icon.textContent = 'bookmark';
+                    this.classList.add('text-red-500');
+                    alert('Lowongan berhasil disimpan!');
+                } else {
+                    icon.textContent = 'bookmark_border';
+                    this.classList.remove('text-red-500');
+                    alert('Lowongan dihapus dari tersimpan');
+                }
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('jobs');
+        });
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
